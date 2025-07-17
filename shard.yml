@@ -1,0 +1,10 @@
+name: github_analyzer
+version: 0.1.0
+authors:
+  - Dein Name <dein@email.de>
+description: Ein CLI-Tool, das GitHub-Profile analysiert und hübsch im Terminal anzeigt.
+license: MIT
+
+dependencies:
+  crest:
+    github: mamantoha/crest 
