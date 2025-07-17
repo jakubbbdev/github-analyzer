@@ -1,9 +1,13 @@
 require "crest"
 require "option_parser"
 
-# ANSI-Farbcodes
 module Color
+  @@enabled = true
+  def self.enable(flag : Bool)
+    @@enabled = flag
+  end
   def self.code(name : Symbol) : String
+    return "" unless @@enabled
     case name
     when :red; "\e[31m"
     when :green; "\e[32m"
@@ -21,7 +25,6 @@ module Color
   end
 end
 
-# Hilfsfunktion: Top 3 Sprachen aus Repo-Liste extrahieren
 def top_languages(repos)
   langs = Hash(String, Int32).new(0)
   repos.each do |repo|
@@ -31,7 +34,6 @@ def top_languages(repos)
   langs.to_a.sort_by { |(_, v)| -v }[0, 3].map(&.first)
 end
 
-# GitHub-Userdaten abfragen
 def fetch_user(username : String)
   Crest.get("https://api.github.com/users/#{username}").body
 end
@@ -40,37 +42,37 @@ def fetch_repos(username : String)
   Crest.get("https://api.github.com/users/#{username}/repos?per_page=100").body
 end
 
-# ASCII-Logo
 logo = <<-LOGO
    ____ _ _   _     _     _     _                 _             
   / ___(_) |_| |__ (_)___| |__ (_)_ __ ___   __ _| |_ ___  _ __ 
  | |  _| | __| '_ \| / __| '_ \| | '_ ` _ \ / _` | __/ _ \| '__|
  | |_| | | |_| | | | \__ \ | | | | | | | | | (_| | || (_) | |   
-  \____|_|\__|_| |_|_|___/_| |_|_| |_| |_|\__,_|\__\___/|_|   
+  \____|_|\__|_| |_|_|___/_| |_|_| |_| |_|[35m\__,_|[0m\u001b[36m\__\___/|_|   
 LOGO
 
-# ASCII-Logo prominent und farbig ausgeben
-puts Color.paint(logo, :cyan)
-puts Color.paint("─" * 65, :magenta)
-
-# CLI-Optionen
 show_help = false
 export_markdown = false
 username = ""
+top_n = 3
+no_color = false
 
 OptionParser.parse do |parser|
-  parser.banner = "\nCrystal GitHub Analyzer - Analyse von GitHub-Profilen\n\nNutzung:\n  crystal run src/github_analyzer.cr -- [Optionen] <github-username>\n"
-  parser.on("--help", "Zeigt diese Hilfe an") { show_help = true }
-  parser.on("--markdown", "Exportiert die Analyse als Markdown-Datei") { export_markdown = true }
+  parser.banner = "\nCrystal GitHub Analyzer - Analyze GitHub profiles\n\nUsage:\n  crystal run src/github_analyzer.cr -- [options] <github-username>\n"
+  parser.on("--help", "Show this help") { show_help = true }
+  parser.on("--markdown", "Export analysis as Markdown file") { export_markdown = true }
+  parser.on("--top N", "Show top N repos (default: 3)") { |n| top_n = n.to_i }
+  parser.on("--no-color", "Disable colored output") { no_color = true }
 end
+
+Color.enable(!no_color)
 
 if show_help || ARGV.size == 0
   help = Color.paint(logo, :cyan) + "\n" +
          Color.paint("─" * 65, :magenta) + "\n" +
          "Crystal GitHub Analyzer\n\n" +
-         "Nutzung:\n  crystal run src/github_analyzer.cr -- [Optionen] <github-username>\n\n" +
-         "Optionen:\n  --help       Zeigt diese Hilfe an\n  --markdown   Exportiert die Analyse als Markdown-Datei\n\n" +
-         "Beispiel:\n  crystal run src/github_analyzer.cr -- jakubbbdev\n  crystal run src/github_analyzer.cr -- --markdown jakubbbdev\n" +
+         "Usage:\n  crystal run src/github_analyzer.cr -- [options] <github-username>\n\n" +
+         "Options:\n  --help       Show this help\n  --markdown   Export analysis as Markdown file\n  --top N      Show top N repos (default: 3)\n  --no-color   Disable colored output\n\n" +
+         "Example:\n  crystal run src/github_analyzer.cr -- jakubbbdev\n  crystal run src/github_analyzer.cr -- --markdown jakubbbdev\n" +
          Color.paint("─" * 65, :magenta)
   puts help
   exit 0
@@ -79,7 +81,7 @@ end
 username = ARGV.last
 puts Color.paint(logo, :cyan)
 puts Color.paint("─" * 65, :magenta)
-puts Color.paint("Analysiere GitHub-Profil von #{username}...", :cyan)
+puts Color.paint("Analyzing GitHub profile: #{username}...", :cyan)
 puts Color.paint("─" * 65, :magenta)
 
 user_json = fetch_user(username)
@@ -89,21 +91,42 @@ user = JSON.parse(user_json)
 repos_json = fetch_repos(username)
 repos = JSON.parse(repos_json).as_a
 
+# Gesamtstars, Forks, Lizenzen
+stars = repos.sum { |repo| repo["stargazers_count"].as_i }
+forks = repos.sum { |repo| repo["forks_count"].as_i }
+licenses = Hash(String, Int32).new(0)
+repos.each do |repo|
+  lic = "None"
+  if lic_json = repo["license"]?
+    if lic_hash = lic_json.as_h?
+      lic = lic_hash["spdx_id"]?.to_s
+    end
+  end
+  licenses[lic] += 1 unless lic.empty?
+end
+most_license = "None"
+if max = licenses.max_by? { |_, v| v }
+  most_license = max[0]
+end
+
 puts Color.paint("\nName: ", :yellow) + Color.paint(user["name"]?.to_s, :green)
 puts Color.paint("Public Repos: ", :yellow) + Color.paint(user["public_repos"].to_s, :green)
-puts Color.paint("Follower: ", :yellow) + Color.paint(user["followers"].to_s, :green)
-puts Color.paint("Folgt: ", :yellow) + Color.paint(user["following"].to_s, :green)
-puts Color.paint("Profil: ", :yellow) + Color.paint(user["html_url"].to_s, :blue)
+puts Color.paint("Followers: ", :yellow) + Color.paint(user["followers"].to_s, :green)
+puts Color.paint("Following: ", :yellow) + Color.paint(user["following"].to_s, :green)
+puts Color.paint("Profile: ", :yellow) + Color.paint(user["html_url"].to_s, :blue)
+puts Color.paint("Total Stars: ", :yellow) + Color.paint(stars.to_s, :magenta)
+puts Color.paint("Total Forks: ", :yellow) + Color.paint(forks.to_s, :magenta)
+puts Color.paint("Most used license: ", :yellow) + Color.paint(most_license, :magenta)
 
 langs = top_languages(repos)
-puts Color.paint("\nTop 3 Sprachen:", :green)
+puts Color.paint("\nTop 3 Languages:", :green)
 langs.each_with_index do |lang, i|
   puts Color.paint("  #{i+1}. #{lang}", :light_green)
 end
 
-# Top 3 Repos nach Stars
-puts Color.paint("\nTop 3 Repos nach Stars:", :blue)
-top_repos = repos.sort_by { |repo| -repo["stargazers_count"].as_i }[0,3]
+# Top N Repos nach Stars
+puts Color.paint("\nTop #{top_n} Repos by Stars:", :blue)
+top_repos = repos.sort_by { |repo| -repo["stargazers_count"].as_i }[0,top_n]
 top_repos.each_with_index do |repo, i|
   name = repo["name"].to_s
   stars = repo["stargazers_count"].as_i.to_s
@@ -112,13 +135,12 @@ top_repos.each_with_index do |repo, i|
   puts Color.paint("  #{i+1}. #{name} (#{lang}) ", :light_green) + Color.paint("★#{stars}", :yellow) + " - " + Color.paint(url, :cyan)
 end
 
-puts Color.paint("\nAktivitätsübersicht (Repos pro Jahr):", :magenta)
+puts Color.paint("\nActivity per Year:", :magenta)
 years = Hash(String, Int32).new(0)
 repos.each do |repo|
   year = repo["created_at"].to_s[0,4]
   years[year] += 1
 end
-# ASCII-Balkendiagramm
 max_count = years.values.max? || 1
 bar_unit = 30.0 / max_count
 years.to_a.sort_by { |(y, _)| y }.each do |year, count|
@@ -127,20 +149,23 @@ years.to_a.sort_by { |(y, _)| y }.each do |year, count|
 end
 
 puts Color.paint("\n" + "═" * 65, :magenta)
-puts Color.paint("Fertig!", :cyan)
+puts Color.paint("Done!", :cyan)
 
 if export_markdown
-  md = "# GitHub-Profil-Analyse: #{username}\n\n"
+  md = "# GitHub Profile Analysis: #{username}\n\n"
   md += "**Name:** #{user["name"]?.to_s}\n\n"
   md += "**Public Repos:** #{user["public_repos"].to_s}\n"
-  md += "**Follower:** #{user["followers"].to_s}\n"
-  md += "**Folgt:** #{user["following"].to_s}\n"
-  md += "**Profil:** [#{user["html_url"].to_s}](#{user["html_url"].to_s})\n\n"
-  md += "## Top 3 Sprachen\n"
+  md += "**Followers:** #{user["followers"].to_s}\n"
+  md += "**Following:** #{user["following"].to_s}\n"
+  md += "**Profile:** [#{user["html_url"].to_s}](#{user["html_url"].to_s})\n"
+  md += "**Total Stars:** #{stars}\n"
+  md += "**Total Forks:** #{forks}\n"
+  md += "**Most used license:** #{most_license}\n"
+  md += "\n## Top 3 Languages\n"
   langs.each_with_index do |lang, i|
     md += "- #{i+1}. #{lang}\n"
   end
-  md += "\n## Top 3 Repos nach Stars\n"
+  md += "\n## Top #{top_n} Repos by Stars\n"
   top_repos.each_with_index do |repo, i|
     name = repo["name"].to_s
     stars = repo["stargazers_count"].as_i.to_s
@@ -148,10 +173,10 @@ if export_markdown
     url = repo["html_url"].to_s
     md += "- [#{name}](#{url}) (#{lang}) ★#{stars}\n"
   end
-  md += "\n## Aktivitätsübersicht (Repos pro Jahr)\n"
+  md += "\n## Activity per Year\n"
   years.to_a.sort_by { |(y, _)| y }.each do |year, count|
     md += "- #{year}: #{count}\n"
   end
   File.write("github_#{username}_analyse.md", md)
-  puts Color.paint("\nAnalyse als github_#{username}_analyse.md gespeichert!", :green)
+  puts Color.paint("\nAnalysis saved as github_#{username}_analyse.md!", :green)
 end 
