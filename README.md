@@ -56,5 +56,8 @@ Creates a file: `github_<username>_analyse.md`
 ## Contributing
 Contributions, issues and feature requests are welcome! Feel free to open a PR or issue.
 
+
 ## License
 MIT 
+
+BY JAKUBBBDEV
