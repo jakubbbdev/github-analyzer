@@ -1,71 +1,75 @@
 # Crystal GitHub Analyzer
 
-Ein stylisches CLI-Tool in [Crystal](https://crystal-lang.org/), das GitHub-Profile analysiert und die wichtigsten Infos farbig und als ASCII-Grafik im Terminal ausgibt.
+A modern CLI tool written in [Crystal](https://crystal-lang.org/) to analyze GitHub profiles and display key stats in a stylish, colored terminal output.
 
 ## Features
-- Farbiges ASCII-Logo und stylische Terminal-Ausgabe
-- Zeigt Name, Follower, Repo-Anzahl, Top-3-Sprachen
-- Top 3 Repos nach Stars (mit Sprache und Link)
-- ASCII-Balkendiagramm für die Repo-Aktivität pro Jahr
-- Export als Markdown-Datei (`--markdown`)
-- Hilfetext (`--help`)
+- Colored ASCII logo and clean terminal output
+- Shows name, followers, public repos, top 3 languages
+- Top 3 repos by stars (with language and link)
+- ASCII bar chart for repo activity per year
+- Markdown export (`--markdown`)
+- Help option (`--help`)
+- Docker support (prebuilt image available)
 
-## Beispiel-Ausgabe
-```text
-   ____ _ _   _     _     _     _                 _             
-  / ___(_) |_| |__ (_)___| |__ (_)_ __ ___   __ _| |_ ___  _ __ 
- | |  _| | __| '_ \| / __| '_ \| | '_ ` _ \ / _` | __/ _ \| '__|
- | |_| | | |_| | | | \__ \ | | | | | | | | | (_| | || (_) | |   
-  \____|_|\__|_| |_|_|___/_| |_|_| |_| |_|[35m\__,_|[0m\u001b[36m\__\___/|_|   
+## Quick Start
+
+### With Docker (recommended)
+```sh
+docker run --rm jakubbbdev/github-analyzer <github-username>
+```
+Example:
+```sh
+docker run --rm jakubbbdev/github-analyzer jakubbbdev
+```
+
+### Local (Crystal required)
+```sh
+git clone https://github.com/jakubbbdev/github-analyzer.git
+cd github-analyzer
+shards install
+crystal run src/github_analyzer.cr -- <github-username>
+```
+
+## Example Output
+```
+   ____ _ _   _     _     _     _                 _
+  / ___(_) |_| |__ (_)___| |__ (_)_ __ ___   __ _| |_ ___  _ __
+ | |  _| | __| '_ | / __| '_ | | '_ ` _  / _` | __/ _ | '__|
+ | |_| | | |_| | | | __  | | | | | | | | | (_| | || (_) | |
+  ____|_|__|_| |_|_|___/_| |_|_| |_| |_|__,_|_____/|_|
 ─────────────────────────────────────────────────────────────────
-Analysiere GitHub-Profil von octocat...
+Analyzing GitHub profile: jakubbbdev...
 ─────────────────────────────────────────────────────────────────
 
-Name: octocat
-Public Repos: 8
-Follower: 5000
-Folgt: 9
-Profil: https://github.com/octocat
+Name: jakubbbdev
+Public Repos: 7
+Followers: 0
+Following: 0
+Profile: https://github.com/jakubbbdev
 
-Top 3 Sprachen:
-  1. Ruby
-  2. JavaScript
-  3. Shell
+Top 3 Languages:
+  1. Shell
+  2. Java
+  3. Rust
 
-Top 3 Repos nach Stars:
-  1. Spoon-Knife (HTML) ★10000 - https://github.com/octocat/Spoon-Knife
-  2. Hello-World (Ruby) ★9000 - https://github.com/octocat/Hello-World
-  3. octocat.github.io (JavaScript) ★8000 - https://github.com/octocat/octocat.github.io
+Top 3 Repos by Stars:
+  1. configs (Shell) ★0 - https://github.com/jakubbbdev/configs
+  2. flow (Rust) ★0 - https://github.com/jakubbbdev/flow
+  3. github-analyzer (Crystal) ★0 - https://github.com/jakubbbdev/github-analyzer
 
-Aktivitätsübersicht (Repos pro Jahr):
-  2019:  2 ████████
-  2020:  3 █████████████
-  2021:  1 ████
-  2022:  2 ████████
+Activity per Year:
+  2025:  7 ██████████████████████████████
 
 ═════════════════════════════════════════════════════════════════
-Fertig!
+Done!
 ```
 
-## Installation
-1. [Crystal installieren](https://crystal-lang.org/install/)
-2. Im Projektordner:
-   ```sh
-   shards install
-   crystal run src/github_analyzer.cr -- --help
-   ```
-
-## Nutzung
+## Markdown Export
+Generate a Markdown report:
 ```sh
-crystal run src/github_analyzer.cr -- <github-username>
-crystal run src/github_analyzer.cr -- --markdown <github-username>
+docker run --rm jakubbbdev/github-analyzer --markdown <github-username>
 ```
+Creates a file: `github_<username>_analyse.md`
 
-## Markdown-Export
-Mit `--markdown` wird eine Datei `github_<username>_analyse.md` erzeugt, die du direkt in dein GitHub-Profil einbinden kannst.
-
-## Lizenz
-MIT
-
----
-Viel Spaß beim Ausprobieren! Starte gern einen PR oder Issue, wenn du Ideen hast 🚀 
+## License
+MIT 

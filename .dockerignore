@@ -1,0 +1,5 @@
+lib/
+shard.lock
+.git/
+.github/
+*.md 
