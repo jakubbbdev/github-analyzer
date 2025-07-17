@@ -66,5 +66,6 @@ MIT
 - Combine `--markdown` with `--top N` to generate detailed reports for your GitHub profile.
 - You can run the tool in Docker without installing Crystal locally.
 - For large organizations, consider using the GitHub API token for higher rate limits (feature coming soon! (hope so)).
+- You can use this tool in CI pipelines for automated GitHub profile reports.
 
 BY JAKUBBBDEV
