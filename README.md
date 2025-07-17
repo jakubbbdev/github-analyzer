@@ -1,7 +1,7 @@
 ![CI](https://github.com/jakubbbdev/github-analyzer/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jakubbbdev/github-analyzer)
 ![Docker Pulls](https://img.shields.io/docker/pulls/jakubbbdev/github-analyzer)
-<!-- ![Release](https://img.shields.io/github/v/release/jakubbbdev/github-analyzer) -->
+![Release](https://img.shields.io/github/v/release/jakubbbdev/github-analyzer)
 
 # Crystal GitHub Analyzer
 
