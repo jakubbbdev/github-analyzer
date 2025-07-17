@@ -60,4 +60,11 @@ Contributions, issues and feature requests are welcome! Feel free to open a PR o
 ## License
 MIT 
 
+## Tips
+
+- Use `--no-color` if you want plain output for scripts or logs.
+- Combine `--markdown` with `--top N` to generate detailed reports for your GitHub profile.
+- You can run the tool in Docker without installing Crystal locally.
+- For large organizations, consider using the GitHub API token for higher rate limits (feature coming soon! (hope so)).
+
 BY JAKUBBBDEV
